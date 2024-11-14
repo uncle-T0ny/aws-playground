@@ -92,7 +92,7 @@ Resources:
                 - Name: SourceArtifact
               Configuration:
                 ActionMode: CREATE_UPDATE
-                StackName: my-lambda-stack
+                StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
                 TemplatePath: SourceArtifact::templates/main-template.yaml
               RunOrder: 1
