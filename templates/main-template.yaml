@@ -77,7 +77,7 @@ Resources:
               Configuration:
                 Owner: uncle-T0ny
                 Repo: aws-playground
-                Branch: master
+                Branch: main
                 OAuthToken: "{{resolve:secretsmanager:GitHubTokenForCodePipeline:SecretString:oauthToken}}"
               RunOrder: 1
         - Name: Deploy
