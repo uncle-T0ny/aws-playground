@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing dependencies..."
+      - npm install
+
+  build:
+    commands:
+      - echo "Building the project..."
+      # Add any build commands if necessary
+
+  post_build:
+    commands:
+      - echo "Packaging the Lambda function..."
+      - zip -r lambda-code.zip .
+      - echo "Uploading Lambda code to S3..."
+      - aws s3 cp lambda-code.zip s3://rant-aws-sample/lambda-code.zip
+
+artifacts:
+  files:
+    - templates/**/*

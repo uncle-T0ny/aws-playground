@@ -3,11 +3,13 @@ Description: Deploy Lambda with API Gateway and CodePipeline using CloudFormatio
 
 Parameters:
   S3Bucket:
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
     Description: S3 Bucket for Lambda code
+    Default: /lambda-s3-bucket
   S3Key:
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
     Description: S3 Key for Lambda code
+    Default: /lambda-s3-key
 
 Resources:
   LambdaFunction:
