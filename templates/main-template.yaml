@@ -39,7 +39,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !Ref ApiGatewayResource
+      ResourceId: !Ref ApiGatewayResourceHello
       HttpMethod: GET
       AuthorizationType: NONE
       Integration:
