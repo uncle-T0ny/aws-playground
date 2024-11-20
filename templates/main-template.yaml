@@ -28,18 +28,18 @@ Resources:
     Properties:
       Name: MyApi
 
-  ApiGatewayResourceHello:
+  ApiGatewayResourceHello2:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: hello
       RestApiId: !Ref ApiGatewayRestApi
 
-  ApiGatewayMethodHello:
+  ApiGatewayMethodHello2:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
-      ResourceId: !Ref ApiGatewayResourceHello
+      ResourceId: !Ref ApiGatewayResourceHello2
       HttpMethod: GET
       AuthorizationType: NONE
       Integration:
@@ -72,7 +72,7 @@ Resources:
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - ApiGatewayMethodHello
+      - ApiGatewayMethodHello2
       - ApiGatewayMethodHello1
     Properties:
         RestApiId: !Ref ApiGatewayRestApi
