@@ -48,6 +48,13 @@ Resources:
         Uri: !Sub
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
 
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        StageName: dev
+
   LambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
