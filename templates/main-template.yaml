@@ -28,14 +28,14 @@ Resources:
     Properties:
       Name: MyApi
 
-  ApiGatewayResource:
+  ApiGatewayResourceHello:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
       PathPart: hello
       RestApiId: !Ref ApiGatewayRestApi
 
-  ApiGatewayMethod:
+  ApiGatewayMethodHello:
     Type: AWS::ApiGateway::Method
     Properties:
       RestApiId: !Ref ApiGatewayRestApi
@@ -48,9 +48,32 @@ Resources:
         Uri: !Sub
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
 
+  ApiGatewayResourceHello1:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
+      PathPart: hello1
+      RestApiId: !Ref ApiGatewayRestApi
+
+  ApiGatewayMethodHello1:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ResourceId: !Ref ApiGatewayResourceHello1
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
+
+
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
-    DependsOn: ApiGatewayMethod
+    DependsOn:
+      - ApiGatewayMethodHello
+      - ApiGatewayMethodHello1
     Properties:
         RestApiId: !Ref ApiGatewayRestApi
         StageName: dev
@@ -62,7 +85,7 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
-        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/hello
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -109,6 +132,10 @@ Resources:
       RestartExecutionOnUpdate: true
 
 Outputs:
-  ApiEndpoint:
-    Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod/hello"
+  ApiEndpointHello:
+    Description: "API Gateway endpoint URL for /hello"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello"
+
+  ApiEndpointHello1:
+    Description: "API Gateway endpoint URL for /hello1"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello1"
