@@ -167,9 +167,7 @@ Resources:
                 Provider: CloudFormation
                 Version: '1'
               InputArtifacts:
-              - Name: SourceArtifact
-              OutputArtifacts:
-                - Name: DeployArtifact
+                - Name: SourceArtifact
               Configuration:
                 ActionMode: CREATE_UPDATE
                 StackName: rant-lambda-stack
@@ -177,6 +175,7 @@ Resources:
                 TemplatePath: SourceArtifact::templates/main-template.yaml
                 RoleArn: arn:aws:iam::417873687559:role/RantCodePipeline
               RunOrder: 1
+              Artifacts: None
       RestartExecutionOnUpdate: true
 
 Outputs:
