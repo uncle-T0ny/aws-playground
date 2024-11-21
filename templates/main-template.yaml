@@ -60,6 +60,11 @@ Resources:
                   - iam:GetRolePolicy
                   - iam:DeleteRolePolicy
                   - iam:PassRole
+                  - apigateway:GET
+                  - apigateway:POST
+                  - apigateway:DELETE
+                  - apigateway:PUT
+                  - apigateway:PATCH
                 Resource: "*"
               - Effect: Allow
                 Action:
