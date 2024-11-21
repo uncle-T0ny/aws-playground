@@ -35,6 +35,29 @@ Resources:
                   - s3:GetObject
                 Resource: arn:aws:s3:::*/*  # Adjust permissions as needed
 
+  CloudFormationDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CloudFormationDeployRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CloudFormationDeployPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource: "*"
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -206,7 +229,7 @@ Resources:
                 StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
                 TemplatePath: BuildArtifact::templates/main-template.yaml
-                RoleArn: !GetAtt CodeBuildServiceRole.Arn
+                RoleArn: !GetAtt CloudFormationDeployRole.Arn
               RunOrder: 1
       RestartExecutionOnUpdate: true
 
