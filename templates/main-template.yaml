@@ -172,7 +172,7 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
-                TemplatePath: SourceArtifact::templates/main-template.yaml
+                TemplatePath: BuildArtifact::templates/main-template.yaml
                 RoleArn: arn:aws:iam::417873687559:role/RantCodePipeline
               RunOrder: 1
       RestartExecutionOnUpdate: true
