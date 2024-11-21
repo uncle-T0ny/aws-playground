@@ -1,0 +1,50 @@
+version: 0.2
+env:
+  variables:
+    PROFILE: tools
+    DEPLOY_NODE_LAYER: 1
+    DEPLOY_ALL_FUNCTIONS: 1
+    PARALLELIZATION_FACTOR: 30
+    STACK_NAME: rant-lambda-stack
+    PROFILE_ROLE_ARN: arn:aws:iam::417873687559:role/CodeBuildServiceRole
+    AWS_REGION: ca-central-1
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+  pre_build:
+    commands:
+      - echo "Setting up AWS CLI profile..."
+      - aws configure set profile.${PROFILE}.role_arn "${PROFILE_ROLE_ARN}"
+      - aws configure set profile.${PROFILE}.credential_source EcsContainer
+      - echo "Preparing for deployment..."
+
+  build:
+    commands:
+      - echo "Building and updating Lambda layers..."
+      - echo "Zipping Lambda function files..."
+      - |
+        zip function.zip index.js
+      - echo "Updating Lambda functions..."
+      - |
+        # Declare the function and call it immediately
+        update_lambda_code_and_config() {
+          FUNCTION_NAME=$1
+          FUNCTION_CODE_PATH=$2
+          echo "Updating $FUNCTION_NAME..."
+          aws lambda update-function-code \
+            --region "${AWS_REGION}" \
+            --function-name "${FUNCTION_NAME}" \
+            --zip-file "fileb://${FUNCTION_CODE_PATH}.zip" \
+            --profile $PROFILE
+        
+          aws lambda wait function-updated \
+            --region "${AWS_REGION}" \
+            --function-name "${FUNCTION_NAME}" \
+            --profile $PROFILE
+        }
+        # Call the function
+        update_lambda_code_and_config "MyLambdaFunction" "function"
+artifacts:
+  files:
+    - "**/*"

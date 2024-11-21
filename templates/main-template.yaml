@@ -12,6 +12,48 @@ Parameters:
     Default: /lambda-s3-key
 
 Resources:
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodeBuildServiceRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildServicePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                Resource: arn:aws:s3:::*
+              - Effect: Allow
+                Action:
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:PublishLayerVersion
+                  - lambda:GetFunction
+                  - lambda:WaitFunctionUpdated
+                Resource: arn:aws:lambda:*:*:function:*
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                Resource: "*"
+
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -64,6 +106,18 @@ Resources:
       SourceArn: !Sub
         arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*
 
+  MyCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: MyCodeBuildProject
+      Source:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+      ServiceRole: arn:aws:iam::417873687559:role/CodeBuildServiceRole
+
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -88,6 +142,21 @@ Resources:
                 Repo: aws-playground
                 Branch: main
                 OAuthToken: "{{resolve:secretsmanager:GitHubTokenForCodePipeline:SecretString:oauthToken}}"
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Configuration:
+                ProjectName: MyCodeBuildProject
               RunOrder: 1
         - Name: Deploy
           Actions:
