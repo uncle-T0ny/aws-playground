@@ -58,6 +58,7 @@ Resources:
                   - s3:ListBucket
                 Resource: "*"
 
+  # this role is used by the CLI to update the Lambda function code
   CLIExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -124,6 +125,7 @@ Resources:
                   - lambda:PublishLayerVersion
                   - lambda:GetFunction
                   - lambda:WaitFunctionUpdated
+                  - lambda:GetFunctionConfiguration
                 Resource: arn:aws:lambda:*:*:function:*
               - Effect: Allow
                 Action:
