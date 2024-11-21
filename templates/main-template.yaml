@@ -60,11 +60,7 @@ Resources:
                   - iam:GetRolePolicy
                   - iam:DeleteRolePolicy
                   - iam:PassRole
-                  - apigateway:GET
-                  - apigateway:POST
-                  - apigateway:DELETE
-                  - apigateway:PUT
-                  - apigateway:PATCH
+                  - apigateway:*
                 Resource: "*"
               - Effect: Allow
                 Action:
@@ -178,7 +174,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: hello-test1
+      PathPart: hello-test
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
@@ -286,4 +282,4 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test1"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test"
