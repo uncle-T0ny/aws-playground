@@ -167,7 +167,9 @@ Resources:
                 Provider: CloudFormation
                 Version: '1'
               InputArtifacts:
-                - Name: SourceArtifact
+              - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: DeployArtifact
               Configuration:
                 ActionMode: CREATE_UPDATE
                 StackName: rant-lambda-stack
