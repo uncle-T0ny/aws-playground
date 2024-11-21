@@ -56,6 +56,10 @@ Resources:
                   - cloudformation:*
                   - s3:GetObject
                   - s3:ListBucket
+                  - iam:PutRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:PassRole
                 Resource: "*"
               - Effect: Allow
                 Action:
