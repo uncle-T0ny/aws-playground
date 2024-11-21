@@ -58,6 +58,34 @@ Resources:
                   - s3:ListBucket
                 Resource: "*"
 
+  CLIExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CLIExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CLIExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:PublishLayerVersion
+                  - lambda:GetFunction
+                  - lambda:WaitFunctionUpdated
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource: "*"
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
