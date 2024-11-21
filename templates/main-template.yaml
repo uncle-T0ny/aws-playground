@@ -130,6 +130,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
                 Resource: "*"
               - Effect: Allow
                 Action:
@@ -137,6 +140,9 @@ Resources:
                   - codebuild:BatchGetBuilds
                   - codebuild:BatchGetProjects
                 Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/MyCodeBuildProject"
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt CloudFormationDeployRole.Arn
 
   LambdaFunction:
     Type: AWS::Lambda::Function
