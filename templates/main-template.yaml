@@ -57,6 +57,11 @@ Resources:
                   - s3:GetObject
                   - s3:ListBucket
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Resource: "*"
 
   # this role is used by the CLI to update the Lambda function code
   CLIExecutionRole:
