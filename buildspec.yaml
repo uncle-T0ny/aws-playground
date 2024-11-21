@@ -35,13 +35,11 @@ phases:
           aws lambda update-function-code \
             --region "${AWS_REGION}" \
             --function-name "${FUNCTION_NAME}" \
-            --zip-file "fileb://${FUNCTION_CODE_PATH}.zip" \
-            --profile $PROFILE
+            --zip-file "fileb://${FUNCTION_CODE_PATH}.zip" 
         
           aws lambda wait function-updated \
             --region "${AWS_REGION}" \
-            --function-name "${FUNCTION_NAME}" \
-            --profile $PROFILE
+            --function-name "${FUNCTION_NAME}" 
         }
         # Call the function
         update_lambda_code_and_config "MyLambdaFunction" "function"
