@@ -44,7 +44,9 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: codebuild.amazonaws.com
+              Service:
+                - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
             Action: sts:AssumeRole
       Policies:
         - PolicyName: CodeBuildServicePolicy
@@ -76,6 +78,12 @@ Resources:
                 Action:
                   - cloudformation:DescribeStacks
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codebuild:BatchGetProjects
+                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/MyCodeBuildProject"
 
   LambdaFunction:
     Type: AWS::Lambda::Function
