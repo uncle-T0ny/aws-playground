@@ -12,6 +12,29 @@ Parameters:
     Default: /lambda-s3-key
 
 Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: LambdaExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: arn:aws:s3:::*/*  # Adjust permissions as needed
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -59,7 +82,7 @@ Resources:
     Properties:
       FunctionName: MyLambdaFunction
       Handler: index.handler
-      Role: arn:aws:iam::417873687559:role/RantLambdaExecutionRole
+      Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: nodejs20.x
       Code:
         S3Bucket: !Ref S3Bucket
@@ -118,13 +141,13 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
-      ServiceRole: arn:aws:iam::417873687559:role/CodeBuildServiceRole
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: MyPipeline
-      RoleArn: arn:aws:iam::417873687559:role/RantCodePipeline
+      RoleArn: !GetAtt CodeBuildServiceRole.Arn
       ArtifactStore:
         Type: S3
         Location: rant-aws-sample
@@ -175,7 +198,7 @@ Resources:
                 StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
                 TemplatePath: BuildArtifact::templates/main-template.yaml
-                RoleArn: arn:aws:iam::417873687559:role/RantCodePipeline
+                RoleArn: !GetAtt CodeBuildServiceRole.Arn
               RunOrder: 1
       RestartExecutionOnUpdate: true
 
