@@ -16,7 +16,6 @@ phases:
     commands:
       - echo "Setting up AWS CLI profile..."
       - aws configure set profile.${PROFILE}.role_arn "${PROFILE_ROLE_ARN}"
-      - aws configure set profile.${PROFILE}.source_profile default
       - aws configure set profile.${PROFILE}.credential_source EcsContainer
       - echo "Preparing for deployment..."
 
