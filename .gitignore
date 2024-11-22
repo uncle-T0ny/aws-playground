@@ -132,3 +132,5 @@ dist
 .idea
 
 .codebuild_build.sh
+
+.DS_Store
