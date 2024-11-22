@@ -15,7 +15,6 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LambdaExecutionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -60,19 +59,24 @@ Resources:
                   - iam:GetRolePolicy
                   - iam:DeleteRolePolicy
                   - iam:PassRole
+                  - iam:GetRole
                   - apigateway:*
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
               - Effect: Allow
                 Action:
                   - ssm:GetParameters
                   - ssm:GetParameter
                 Resource: "*"
 
-  # this role is used by the CLI to update the Lambda function code
+  # This role is used by the CLI to update the Lambda function code
   CLIExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CLIExecutionRole
+      # Removed RoleName to let CloudFormation generate it
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -100,7 +104,6 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CodeBuildServiceRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -108,7 +111,6 @@ Resources:
             Principal:
               Service:
                 - codebuild.amazonaws.com
-                - codepipeline.amazonaws.com
             Action: sts:AssumeRole
       Policies:
         - PolicyName: CodeBuildServicePolicy
@@ -144,15 +146,37 @@ Resources:
                   - cloudformation:CreateStack
                   - cloudformation:DeleteStack
                 Resource: "*"
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelineServicePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codepipeline:*
+                Resource: "*"
               - Effect: Allow
                 Action:
                   - codebuild:StartBuild
                   - codebuild:BatchGetBuilds
                   - codebuild:BatchGetProjects
-                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/MyCodeBuildProject"
+                Resource: "*"
               - Effect: Allow
                 Action: iam:PassRole
-                Resource: !GetAtt CloudFormationDeployRole.Arn
+                Resource:
+                  - !GetAtt CodeBuildServiceRole.Arn
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
 
   LambdaFunction:
     Type: AWS::Lambda::Function
@@ -224,7 +248,7 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: MyPipeline
-      RoleArn: !GetAtt CodeBuildServiceRole.Arn
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
       ArtifactStore:
         Type: S3
         Location: rant-aws-sample
@@ -275,7 +299,7 @@ Resources:
                 StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
                 TemplatePath: BuildArtifact::templates/main-template.yaml
-                RoleArn: !GetAtt CloudFormationDeployRole.Arn
+                RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
               RunOrder: 1
       RestartExecutionOnUpdate: true
 
