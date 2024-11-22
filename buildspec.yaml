@@ -43,6 +43,20 @@ phases:
         }
         # Call the function
         update_lambda_code_and_config "MyLambdaFunction" "function"
+  post_build:
+    commands:
+      - echo "Creating a new API Gateway deployment to release changes..."
+      - |
+        API_ID=$(aws cloudformation describe-stacks \
+          --stack-name "${STACK_NAME}" \
+          --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
+          --output text | cut -d '/' -f 3 | cut -d '.' -f 1)
+
+        echo "API Gateway ID: ${API_ID}"
+
+        aws apigateway create-deployment \
+          --rest-api-id "${API_ID}" \
+          --stage-name dev
 artifacts:
   files:
     - "**/*"
