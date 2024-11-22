@@ -1,6 +1,13 @@
 exports.handler = async (event) => {
-  return {
+  // Your function logic here
+
+  const response = {
     statusCode: 200,
-    body: JSON.stringify('Hello from Lambda! 10:54')
+    headers: {
+      "Access-Control-Allow-Origin": "*", // Allow all origins
+      "Access-Control-Allow-Credentials": true // Required for cookies, authorization headers with HTTPS
+    },
+    body: JSON.stringify({ message: "Hello, World!" })
   };
+  return response;
 };
