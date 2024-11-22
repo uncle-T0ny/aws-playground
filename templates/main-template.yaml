@@ -139,22 +139,7 @@ Resources:
                 Repo: aws-playground
                 Branch: main
                 OAuthToken: "{{resolve:secretsmanager:GitHubTokenForCodePipeline:SecretString:oauthToken}}"
-              RunOrder: 1
-        - Name: Build
-          Actions:
-            - Name: BuildAction
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: '1'
-              InputArtifacts:
-                - Name: SourceArtifact
-              OutputArtifacts:
-                - Name: BuildArtifact
-              Configuration:
-                ProjectName: MyCodeBuildProject
-              RunOrder: 1
+              RunOrder: 0
         - Name: Deploy
           Actions:
             - Name: DeployAction
@@ -172,6 +157,21 @@ Resources:
                 TemplatePath: BuildArtifact::templates/main-template.yaml
                 RoleArn: !GetAtt UnifiedExecutionRole.Arn
               RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Configuration:
+                ProjectName: MyCodeBuildProject
+              RunOrder: 2
       RestartExecutionOnUpdate: true
 
 Outputs:
