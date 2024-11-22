@@ -69,7 +69,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: hello-test-v6
+      PathPart: hello-test-v7
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
@@ -108,6 +108,21 @@ Resources:
       Source:
         Type: CODEPIPELINE
         BuildSpec: ".buildspecs/deploy-lambdas.yaml"
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        Type: LINUX_CONTAINER
+      ServiceRole: !GetAtt UnifiedExecutionRole.Arn
+
+  DeployApiGatewayBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: DeployApiGatewayBuildProject
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: ".buildspecs/deploy-api-gateway.yaml"
       Artifacts:
         Type: CODEPIPELINE
       Environment:
@@ -173,9 +188,22 @@ Resources:
                 TemplatePath: BuildArtifact::templates/main-template.yaml
                 RoleArn: !GetAtt UnifiedExecutionRole.Arn
               RunOrder: 1
+        - Name: DeployApiGateway
+          Actions:
+              - Name: DeployApiGatewayAction
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: '1'
+                InputArtifacts:
+                  - Name: BuildArtifact
+                Configuration:
+                  ProjectName: DeployApiGatewayBuildProject
+                RunOrder: 1
       RestartExecutionOnUpdate: true
 
 Outputs:
   ApiEndpoint:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test-v6"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test-v7"
