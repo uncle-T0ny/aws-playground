@@ -12,96 +12,7 @@ Parameters:
     Default: /lambda-s3-key
 
 Resources:
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: LambdaExecutionPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource: arn:aws:s3:::*/*  # Adjust permissions as needed
-
-  CloudFormationDeployRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: CloudFormationDeployRole
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cloudformation.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CloudFormationDeployPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cloudformation:*
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - iam:PutRolePolicy
-                  - iam:GetRolePolicy
-                  - iam:DeleteRolePolicy
-                  - iam:PassRole
-                  - iam:GetRole
-                  - apigateway:*
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - iam:GetRole
-                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
-              - Effect: Allow
-                Action:
-                  - ssm:GetParameters
-                  - ssm:GetParameter
-                Resource: "*"
-
-  # This role is used by the CLI to update the Lambda function code
-  CLIExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      # Removed RoleName to let CloudFormation generate it
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CLIExecutionPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:UpdateFunctionCode
-                  - lambda:UpdateFunctionConfiguration
-                  - lambda:PublishLayerVersion
-                  - lambda:GetFunction
-                  - lambda:WaitFunctionUpdated
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:ListBucket
-                Resource: "*"
-
-  CodeBuildServiceRole:
+  UnifiedExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -110,80 +21,40 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
+                - lambda.amazonaws.com
                 - codebuild.amazonaws.com
+                - codepipeline.amazonaws.com
+                - cloudformation.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: CodeBuildServicePolicy
+        - PolicyName: UnifiedExecutionPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:GetBucketLocation
-                  - s3:ListBucket
-                Resource: arn:aws:s3:::*
-              - Effect: Allow
-                Action:
-                  - lambda:UpdateFunctionCode
-                  - lambda:UpdateFunctionConfiguration
-                  - lambda:PublishLayerVersion
-                  - lambda:GetFunction
-                  - lambda:WaitFunctionUpdated
-                  - lambda:GetFunctionConfiguration
-                Resource: arn:aws:lambda:*:*:function:*
-              - Effect: Allow
-                Action:
-                  - cloudformation:DescribeStacks
-                  - cloudformation:UpdateStack
-                  - cloudformation:CreateStack
-                  - cloudformation:DeleteStack
-                Resource: "*"
-
-  CodePipelineServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codepipeline.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CodePipelineServicePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
                   - codepipeline:*
+                  - codebuild:*
+                  - cloudformation:*
+                  - lambda:*
+                  - s3:*
+                  - logs:*
+                  - apigateway:*
+                  - ssm:GetParameters
+                  - ssm:GetParameter
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - codebuild:StartBuild
-                  - codebuild:BatchGetBuilds
-                  - codebuild:BatchGetProjects
-                Resource: "*"
-              - Effect: Allow
-                Action: iam:PassRole
+                  - iam:PassRole
                 Resource:
-                  - !GetAtt CodeBuildServiceRole.Arn
-                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-*"
 
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: MyLambdaFunction
       Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt UnifiedExecutionRole.Arn
       Runtime: nodejs20.x
       Code:
         S3Bucket: !Ref S3Bucket
@@ -242,13 +113,13 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      ServiceRole: !GetAtt UnifiedExecutionRole.Arn
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: MyPipeline
-      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      RoleArn: !GetAtt UnifiedExecutionRole.Arn
       ArtifactStore:
         Type: S3
         Location: rant-aws-sample
@@ -299,7 +170,7 @@ Resources:
                 StackName: rant-lambda-stack
                 Capabilities: CAPABILITY_NAMED_IAM
                 TemplatePath: BuildArtifact::templates/main-template.yaml
-                RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/CloudFormationDeployRole"
+                RoleArn: !GetAtt UnifiedExecutionRole.Arn
               RunOrder: 1
       RestartExecutionOnUpdate: true
 
