@@ -69,7 +69,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: hello-test-v2
+      PathPart: hello-test-v3
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
@@ -173,3 +173,8 @@ Resources:
                 RoleArn: !GetAtt UnifiedExecutionRole.Arn
               RunOrder: 1
       RestartExecutionOnUpdate: true
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test-v3"
