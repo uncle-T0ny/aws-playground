@@ -69,7 +69,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGatewayRestApi.RootResourceId
-      PathPart: hello-test-v6
+      PathPart: hello-test-v5
       RestApiId: !Ref ApiGatewayRestApi
 
   ApiGatewayMethod:
@@ -113,9 +113,6 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:7.0
         Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: CODEBUILD_BUILD_SPEC
-            Value: ".buildspecs/deploy-lambdas.yaml"
       ServiceRole: !GetAtt UnifiedExecutionRole.Arn
 
   Pipeline:
@@ -142,22 +139,7 @@ Resources:
                 Repo: aws-playground
                 Branch: main
                 OAuthToken: "{{resolve:secretsmanager:GitHubTokenForCodePipeline:SecretString:oauthToken}}"
-              RunOrder: 1
-        - Name: Build
-          Actions:
-            - Name: BuildAction
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: '1'
-              InputArtifacts:
-                - Name: SourceArtifact
-              OutputArtifacts:
-                - Name: BuildArtifact
-              Configuration:
-                ProjectName: MyCodeBuildProject
-              RunOrder: 1
+              RunOrder: 0
         - Name: Deploy
           Actions:
             - Name: DeployAction
@@ -175,9 +157,24 @@ Resources:
                 TemplatePath: BuildArtifact::templates/main-template.yaml
                 RoleArn: !GetAtt UnifiedExecutionRole.Arn
               RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              Configuration:
+                ProjectName: MyCodeBuildProject
+              RunOrder: 2
       RestartExecutionOnUpdate: true
 
 Outputs:
   ApiEndpoint:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test-v6"
+    Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/dev/hello-test-v5"
