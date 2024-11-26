@@ -20,7 +20,6 @@ phases:
       - |
         # Read the exit status and test output
         test_exit_code=$(cat test_exit_code.txt)
-        test_output=$(cat test_output.txt | grep "FAIL")
 
         # Function to escape JSON special characters
         escape_json() {
@@ -34,15 +33,12 @@ phases:
             message="✅ *Build Succeeded*: The integration tests passed successfully."
           else
             # Limit output to last 50 lines to avoid exceeding Slack message limits
-            test_output_tail=$(tail -n 50 test_output.txt)
-            escaped_output=$(escape_json "$test_output_tail")
-            message="🚫 *Build Failed*: The integration tests failed.\n\`\`\`$test_output_tail\`\`\`"
+            test_output=$(cat test_output.txt | grep "FAIL")
+            message="🚫 *Build Failed*: The integration tests failed.\n\`\`\`$test_output\`\`\`"
           fi
           echo "Sending Slack notification..."
-          # Escape the message for JSON
-          escaped_message=$(echo -e "$message" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": $escaped_message}" "$SLACK_WEBHOOK_URL"
+            --data "{\"text\": $message}" "$SLACK_WEBHOOK_URL"
         }
 
         if [ "$test_exit_code" -eq 0 ]; then
