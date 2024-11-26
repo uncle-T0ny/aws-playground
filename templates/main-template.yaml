@@ -57,6 +57,11 @@ Resources:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:GitHubTokenForCodePipeline*"
 
 
+  TestNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: TestResultsNotification
+
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
