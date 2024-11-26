@@ -12,7 +12,14 @@ phases:
       - npm test
   post_build:
     commands:
-      - echo "Tests completed."
+      - |
+        if [ $? -eq 0 ]; then
+          STATUS="SUCCESS"
+        else
+          STATUS="FAILED"
+        fi
+        aws sns publish --topic-arn "arn:aws:sns:${AWS_REGION}:${CODEBUILD_ACCOUNT_ID}:TestResultsNotification" \
+          --message "Integration Tests ${STATUS}."
 artifacts:
   files:
     - "**/*"
