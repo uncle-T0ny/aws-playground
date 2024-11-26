@@ -46,6 +46,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - iam:*
+                  - sns:*
                 Resource:
                   - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-*"
               - Effect: Allow
