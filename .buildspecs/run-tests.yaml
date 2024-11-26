@@ -1,5 +1,7 @@
 version: 0.2
-
+env:
+  variables:
+    SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
 phases:
   install:
     runtime-versions:
@@ -10,27 +12,27 @@ phases:
     commands:
       - echo "Running integration tests..."
       - npm test
-#  post_build:
-#    commands:
-#      - |
-#        if [ $? -eq 0 ]; then
-#          STATUS="SUCCESS"
-#        else
-#          STATUS="FAILED"
-#        fi
-#        send_slack_notification() {
-#          local status=$1
-#          local message
-#          if [ "$status" = "SUCCESS" ]; then
-#            message="✅ *Build Succeeded* : The integration tests passed successfully."
-#          else
-#            message="🚫 *Build Failed* : The integration tests failed."
-#          fi
-#          echo "Sending Slack notification: $message"
-#          curl -X POST -H 'Content-type: application/json' \
-#            --data "{\"text\":\"${message}\"}" "$SLACK_WEBHOOK_URL"
-#        }
-#        send_slack_notification "$STATUS"
+  post_build:
+    commands:
+      - |
+        send_slack_notification() {
+          local status=$1
+          local message
+          if [ "$status" = "SUCCESS" ]; then
+            message="✅ *Build Succeeded* : The integration tests passed successfully."
+          else
+            message="🚫 *Build Failed* : The integration tests failed."
+          fi
+          echo "Sending Slack notification: $message"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"${message}\"}" "$SLACK_WEBHOOK_URL"
+        }
+        
+        if [ $? -eq 0 ]; then
+          send_slack_notification "SUCCESS"
+        else
+         send_slack_notification "FAILED"
+        fi
 artifacts:
   files:
     - "**/*"
