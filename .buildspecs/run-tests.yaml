@@ -33,7 +33,7 @@ phases:
           message="✅ *Build Succeeded*: The integration tests passed successfully."
           else
           # Extract only failed test case names from the output
-          test_output=$(grep "FAIL" test_output.txt | awk -F':' '{print $2}' | tail -n 50)
+          test_output=$(grep "FAIL" test_output.txt)
           if [ -z "$test_output" ]; then
           test_output="No specific failed test cases found."
           fi
