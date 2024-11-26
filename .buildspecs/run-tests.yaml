@@ -37,7 +37,7 @@ phases:
           if [ -z "$test_output" ]; then
           test_output="No specific failed test cases found."
           fi
-          message="🚫 *Build Failed*: The integration tests failed.\nFailed Test Cases:\n\`\`\`$test_output\`\`\`"
+          message="🚫 *Build Failed*: The integration tests failed.\nFailed Test Files:\n\`\`\`$test_output\`\`\`"
           fi
           echo "Sending Slack notification..."
           escaped_message=$(escape_json "$message")
