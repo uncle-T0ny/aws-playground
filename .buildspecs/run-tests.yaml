@@ -20,7 +20,7 @@ phases:
       - |
         # Read the exit status and test output
         test_exit_code=$(cat test_exit_code.txt)
-        test_output=$(cat test_output.txt)
+        test_output=$(cat test_output.txt | grep "FAIL")
 
         # Function to escape JSON special characters
         escape_json() {
