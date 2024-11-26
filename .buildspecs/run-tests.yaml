@@ -15,13 +15,13 @@ phases:
     commands:
       - echo "Determining build status..."
       - STATUS="FAILED"
-      - if [ "$CODEBUILD_BUILD_SUCCEEDING" -eq 1 ]; then STATUS="SUCCESS"; fi
+      - 'if [ "$CODEBUILD_BUILD_SUCCEEDING" -eq 1 ]; then STATUS="SUCCESS"; fi'
       - echo "Fetching Slack Webhook URL from Secrets Manager..."
-      - SLACK_WEBHOOK_URL=$(aws secretsmanager get-secret-value --secret-id SlackWebHookURL --query SecretString --output text || echo "ERROR")
-      - if [ "$SLACK_WEBHOOK_URL" = "ERROR" ]; then echo "Failed to retrieve Slack Webhook URL."; exit 1; fi
+      - 'SLACK_WEBHOOK_URL=$(aws secretsmanager get-secret-value --secret-id SlackWebHookURL --query SecretString --output text || echo "ERROR")'
+      - 'if [ "$SLACK_WEBHOOK_URL" = "ERROR" ]; then echo "Failed to retrieve Slack Webhook URL."; exit 1; fi'
       - echo "Webhook URL: $SLACK_WEBHOOK_URL"
       - echo "Sending notification to Slack..."
-      - curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Integration Tests ${STATUS}!\"}" "$SLACK_WEBHOOK_URL"
+      - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"Integration Tests ${STATUS}!\"}" "$SLACK_WEBHOOK_URL"'
 artifacts:
   files:
     - "**/*"
