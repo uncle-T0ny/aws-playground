@@ -18,7 +18,7 @@ phases:
   post_build:
     commands:
       - |
-        # Read the exit status and test output
+        # Read the exit status and test output from files
         test_exit_code=$(cat test_exit_code.txt)
 
         # Function to escape JSON special characters
