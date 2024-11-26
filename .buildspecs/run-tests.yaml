@@ -1,7 +1,4 @@
 version: 0.2
-env:
-  variables:
-    # SLACK_WEBHOOK_URL is read from the CodeBuild environment variables
 phases:
   install:
     runtime-versions:
