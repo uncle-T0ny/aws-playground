@@ -5,7 +5,6 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo "Installing dependencies..."
       - npm install
   build:
     commands:
@@ -13,19 +12,12 @@ phases:
       - npm test
   post_build:
     commands:
-      - echo "Determining build status..."
-      - STATUS="FAILED"
-      - if [ "$CODEBUILD_BUILD_SUCCEEDING" -eq 1 ]; then STATUS="SUCCESS"; fi
-      - echo "Build status: $STATUS"
-      - echo "Fetching Slack Webhook URL..."
       - |
-        SLACK_WEBHOOK_URL="https://hooks.slack.com/services/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"
-      - if [ "$SLACK_WEBHOOK_URL" = "ERROR" ]; then
-        echo "Failed to retrieve Slack Webhook URL."
-        exit 1
+        if [ $? -eq 0 ]; then
+          STATUS="SUCCESS"
+        else
+          STATUS="FAILED"
         fi
-      - echo "Sending notification to Slack..."
-      - |
         send_slack_notification() {
           local status=$1
           local message
