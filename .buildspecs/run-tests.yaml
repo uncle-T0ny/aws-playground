@@ -1,7 +1,7 @@
 version: 0.2
 env:
   variables:
-    SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
+    # SLACK_WEBHOOK_URL is read from the CodeBuild environment variables
 phases:
   install:
     runtime-versions:
