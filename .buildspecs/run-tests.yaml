@@ -14,31 +14,31 @@ phases:
   post_build:
     commands:
       - echo "Determining build status..."
-          - STATUS="FAILED"
-          - if [ "$CODEBUILD_BUILD_SUCCEEDING" -eq 1 ]; then STATUS="SUCCESS"; fi
-          - echo "Build status: $STATUS"
-          - echo "Fetching Slack Webhook URL from Secrets Manager..."
-          - |
-            SLACK_WEBHOOK_URL="https://hooks.slack.com/services/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"
-          - if [ "$SLACK_WEBHOOK_URL" = "ERROR" ]; then
-            echo "Failed to retrieve Slack Webhook URL.";
-            exit 1;
-            fi
-          - echo "Sending notification to Slack..."
-          - |
-            send_slack_notification() {
-              local status=$1
-              local message
-              if [ "$status" = "SUCCESS" ]; then
-                message="✅ *Build Succeeded* : The integration tests passed successfully."
-              else
-                message="🚫 *Build Failed* : The integration tests failed."
-              fi
-              echo "Sending Slack notification: $message"
-              curl -X POST -H 'Content-type: application/json' \
-                --data "{\"text\":\"${message}\"}" "$SLACK_WEBHOOK_URL"
-            }
-            send_slack_notification "$STATUS"
+      - STATUS="FAILED"
+      - if [ "$CODEBUILD_BUILD_SUCCEEDING" -eq 1 ]; then STATUS="SUCCESS"; fi
+      - echo "Build status: $STATUS"
+      - echo "Fetching Slack Webhook URL..."
+      - |
+        SLACK_WEBHOOK_URL="https://hooks.slack.com/services/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"
+      - if [ "$SLACK_WEBHOOK_URL" = "ERROR" ]; then
+        echo "Failed to retrieve Slack Webhook URL."
+        exit 1
+        fi
+      - echo "Sending notification to Slack..."
+      - |
+        send_slack_notification() {
+          local status=$1
+          local message
+          if [ "$status" = "SUCCESS" ]; then
+            message="✅ *Build Succeeded* : The integration tests passed successfully."
+          else
+            message="🚫 *Build Failed* : The integration tests failed."
+          fi
+          echo "Sending Slack notification: $message"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"${message}\"}" "$SLACK_WEBHOOK_URL"
+        }
+        send_slack_notification "$STATUS"
 artifacts:
   files:
     - "**/*"
