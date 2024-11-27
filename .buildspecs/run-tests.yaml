@@ -17,31 +17,33 @@ phases:
       - |
         # Read the exit status and test output from files
         test_exit_code=$(cat test_exit_code.txt)
-
-        # Function to escape JSON special characters
+        
+        # Escape JSON special characters for Slack message
         escape_json() {
           echo "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
         }
-
+        
         send_slack_notification() {
           local status="$1"
           local message
           if [ "$status" = "SUCCESS" ]; then
           message="✅ *Build Succeeded*: The integration tests passed successfully."
           else
-          # Extract only failed test case names from the output
-          test_output=$(tail -n 500 test_output.txt)
+          # Include the output of the failed tests in Slack message
+          test_output=$(tail -n 1000 test_output.txt)
           if [ -z "$test_output" ]; then
-          test_output="No specific failed test cases found."
+            test_output="No specific failed test cases found."
           fi
-          message="🚫 *Build Failed*: The integration tests failed."
+          escaped_output=$(escape_json "$test_output")
+          message="🚫 *Build Failed*: The integration tests failed. Check the details below:\n\n\`\`\`$test_output\`\`\`"
           fi
+        
           echo "Sending Slack notification..."
           escaped_message=$(escape_json "$message")
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": $escaped_message, \"attachments\": [{\"text\": \"\`\`\`$test_output\`\`\`\"}]}" "$SLACK_WEBHOOK_URL"
+            --data "{\"text\": $escaped_message}" "$SLACK_WEBHOOK_URL"
         }
-
+        
         if [ "$test_exit_code" -eq 0 ]; then
           send_slack_notification "SUCCESS"
         else
@@ -49,4 +51,4 @@ phases:
         fi
 artifacts:
   files:
-    - "**/*"
+    - "test_output.txt"
