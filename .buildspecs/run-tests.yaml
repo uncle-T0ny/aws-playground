@@ -34,12 +34,12 @@ phases:
           if [ -z "$test_output" ]; then
           test_output="No specific failed test cases found."
           fi
-          message="🚫 *Build Failed*: The integration tests failed.\nFailed Test Files:\n\`\`\`$test_output\`\`\`"
+          message="🚫 *Build Failed*: The integration tests failed."
           fi
           echo "Sending Slack notification..."
           escaped_message=$(escape_json "$message")
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": $escaped_message}" "$SLACK_WEBHOOK_URL"
+            --data "{\"text\": $escaped_message, \"attachments\": [{\"text\": \"\`\`\`$test_output\`\`\`\"}]}" "$SLACK_WEBHOOK_URL"
         }
 
         if [ "$test_exit_code" -eq 0 ]; then
