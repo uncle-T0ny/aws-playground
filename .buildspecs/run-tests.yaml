@@ -12,7 +12,6 @@ phases:
         # Run tests and capture output and exit status
         npm test > test_output.txt 2>&1
         echo $? > test_exit_code.txt
-        echo "Test output: $SLACK_WEBHOOK_URL"
   post_build:
     commands:
       - |

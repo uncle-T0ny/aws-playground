@@ -9,6 +9,7 @@ phases:
     commands:
       - echo Deploying API Gateway...
       - export API_ID=$(aws apigateway get-rest-apis --query "items[?name=='MyApi'].id" --output text)
+      - echo "API Gateway ID: ${API_ID}"
       - aws apigateway create-deployment --rest-api-id "${API_ID}" --stage-name dev
   post_build:
     commands:
