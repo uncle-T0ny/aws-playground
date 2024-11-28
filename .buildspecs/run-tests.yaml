@@ -60,9 +60,13 @@ phases:
             "$upload_url")
         
           complete_response=$(curl -s -X POST "https://slack.com/api/files.completeUploadExternal" \
-            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-            -H "Content-Type: application/json; charset=utf-8" \
-            -d "{"files": [{"id": "$file_id", "title": "$file_name"}], "channel_id": "$channel_id", "initial_comment": "Here are the test results:"}")
+                -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+                -H "Content-Type: application/json; charset=utf-8" \
+                -d '{
+                  "files": [{"id": "'"$file_id"'", "title": "'"$file_name"'"}],
+                  "channel_id": "'"$channel_id"'",
+                  "initial_comment": "here are the test results"
+                  }')
         
           if echo "$complete_response" | jq -e '.ok' > /dev/null; then
             return 0
