@@ -19,24 +19,30 @@ phases:
         echo $? > test_exit_code.txt
   post_build:
     commands:
-      # Read the exit status and test output from files
-      - test_exit_code=$(cat test_exit_code.txt)
+      - echo "Reading test exit code..."
+      - |
+        if [ ! -f test_exit_code.txt ]; then
+          echo "Error: test_exit_code.txt not found. Exiting."
+          exit 1
+        fi
+        test_exit_code=$(cat test_exit_code.txt | tr -d '[:space:]')
+      - echo "Test exit code: $test_exit_code"
       - |
         # Function to upload a file to Slack
         upload_file_to_slack() {
           local file_path="$1"
           local file_name="$2"
           local channel_id="$3"
-  
+
           echo "Starting file upload process..."
-  
+
           if [ ! -f "$file_path" ]; then
             echo "Error: File $file_path does not exist"
             return 1
           fi
-  
+
           file_length=$(wc -c < "$file_path" | tr -d '[:space:]')
-  
+
           # Step 1: Get upload URL and file ID
           echo "Getting upload URL..."
           response=$(curl -s -X GET -G \
@@ -44,29 +50,29 @@ phases:
             --data-urlencode "filename=$file_name" \
             --data-urlencode "length=$file_length" \
             https://slack.com/api/files.getUploadURLExternal)
-  
+
           echo "API Response: $response"
-  
+
           upload_url=$(echo "$response" | jq -r '.upload_url')
           file_id=$(echo "$response" | jq -r '.file_id')
-  
+
           echo "Upload URL: $upload_url"
           echo "File ID: $file_id"
-  
+
           if [ "$upload_url" = "null" ] || [ "$file_id" = "null" ]; then
             echo "Failed to get upload URL: $response"
             return 1
           fi
-  
+
           echo "Uploading $file_path to Slack..."
-  
+
           # Step 2: Upload the file
           upload_response=$(curl -s -X POST --data-binary @"$file_path" \
             -H "Content-Type: application/octet-stream" \
             "$upload_url")
-  
+
           echo "Upload response: $upload_response"
-  
+
           # Step 3: Complete the upload
           complete_response=$(curl -s -X POST "https://slack.com/api/files.completeUploadExternal" \
             -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
@@ -76,9 +82,9 @@ phases:
             \"channel_id\": \"$channel_id\",
             \"initial_comment\": \"Here are the test results:\"
           }")
-  
+
           echo "Complete upload response: $complete_response"
-  
+
           if echo "$complete_response" | jq -e '.ok' > /dev/null; then
             echo "File upload completed successfully"
             return 0
