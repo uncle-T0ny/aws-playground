@@ -1,6 +1,10 @@
 exports.handler = async (event) => {
   // Your function logic here
 
+  if (!event.requiredKey) {
+    throw new Error("Missing required input key.");
+  }
+
   const response = {
     statusCode: 200,
     headers: {
