@@ -1,7 +1,11 @@
 exports.handler = async (event) => {
   // Your function logic here
 
-  if (!event.requiredKey) {
+  console.log("Event: ", event);
+
+  const requiredKey = event.queryStringParameters?.requiredKey;
+
+  if (!requiredKey) {
     throw new Error("Missing required input key.");
   }
 
