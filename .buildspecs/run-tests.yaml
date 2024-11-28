@@ -8,6 +8,7 @@ phases:
       nodejs: 20
     commands:
       - npm install
+      - yum -y install jq
   build:
     commands:
       - echo "Running integration tests..."
