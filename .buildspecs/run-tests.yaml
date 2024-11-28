@@ -12,7 +12,7 @@ phases:
       - apt-get update && apt-get install -y jq
   build:
     commands:
-      - echo "Running integration tests..." && npm test > test_output.txt 2>&1 && echo $? > test_exit_code.txt
+      - echo "Running integration tests..." && npm test > test_output.txt 2>&1; echo $? > test_exit_code.txt
   post_build:
     commands:
       - |
