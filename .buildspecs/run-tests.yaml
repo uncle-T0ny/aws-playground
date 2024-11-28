@@ -18,7 +18,7 @@ phases:
         #!/bin/bash
         echo "Retrieving SLACK_BOT_TOKEN from AWS Secrets Manager..."
         SLACK_BOT_TOKEN=$(aws secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:ca-central-1:417873687559:secret:SlackBotToken-rY8Mqn" --output text --query SecretString)
-
+        
         if [ -z "$SLACK_BOT_TOKEN" ]; then
           echo "Error: Failed to retrieve SLACK_BOT_TOKEN from Secrets Manager."
           exit 1
@@ -62,9 +62,13 @@ phases:
             return 1
           fi
         
+          echo "Uploading file to $upload_url with file ID $file_path..."
+        
           upload_response=$(curl -s -X POST --data-binary @"$file_path" \
             -H "Content-Type: application/octet-stream" \
             "$upload_url")
+        
+          echo "Upload response: $upload_response"
         
           complete_response=$(curl -s -X POST "https://slack.com/api/files.completeUploadExternal" \
                 -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
