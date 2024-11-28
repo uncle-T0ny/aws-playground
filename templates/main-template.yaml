@@ -25,6 +25,7 @@ Resources:
                 - codebuild.amazonaws.com
                 - codepipeline.amazonaws.com
                 - cloudformation.amazonaws.com
+                - cloudwatch.amazonaws.com
             Action: sts:AssumeRole
       Policies:
         - PolicyName: UnifiedExecutionPolicy
@@ -43,6 +44,7 @@ Resources:
                   - ssm:GetParameters
                   - ssm:GetParameter
                   - sns:*
+                  - cloudwatch:*
                 Resource: "*"
               - Effect: Allow
                 Action:
