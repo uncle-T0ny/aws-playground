@@ -134,3 +134,5 @@ dist
 .codebuild_build.sh
 
 .DS_Store
+
+run-tests-local

@@ -8,7 +8,6 @@ phases:
       nodejs: 20
     commands:
       - npm install
-      - apt-get update && apt-get install -y jq
   build:
     commands:
       - echo "Running integration tests..." && npm test > test_output.txt 2>&1; echo $? > test_exit_code.txt
