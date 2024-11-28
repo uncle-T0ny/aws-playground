@@ -8,6 +8,8 @@ phases:
       nodejs: 20
     commands:
       - npm install
+      - apt-get update
+      - apt-get install -y jq
   build:
     commands:
       - echo "Running integration tests..."
@@ -46,6 +48,11 @@ phases:
 
           echo "Upload URL: $upload_url"
           echo "File ID: $file_id"
+
+          if [ "$upload_url" = "null" ] || [ "$file_id" = "null" ]; then
+            echo "Failed to get upload URL: $response"
+            return 1
+          fi
 
           echo "Uploading $file_path to Slack..."
 
