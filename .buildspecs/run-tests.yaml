@@ -17,7 +17,6 @@ phases:
         npm test > test_output.txt 2>&1
         echo $? > test_exit_code.txt
   post_build:
-    shell: bash
     commands:
       - |
         # Read the exit status and test output from files
