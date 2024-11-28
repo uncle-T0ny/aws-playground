@@ -17,6 +17,7 @@ phases:
         npm test > test_output.txt 2>&1
         echo $? > test_exit_code.txt
   post_build:
+    shell: bash
     commands:
       - |
         # Read the exit status and test output from files
@@ -34,7 +35,6 @@ phases:
           local channel_id="$3"
 
           echo "SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:0:10}..." 
-
 
           file_length=$(wc -c < "$file_path" | tr -d '[:space:]')
 
