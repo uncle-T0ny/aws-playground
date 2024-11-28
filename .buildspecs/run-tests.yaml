@@ -14,7 +14,6 @@ phases:
   post_build:
     commands:
       - |
-        #!/bin/bash
         echo "Retrieving SLACK_BOT_TOKEN from AWS Secrets Manager..."
         SLACK_BOT_TOKEN=$(aws secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:ca-central-1:417873687559:secret:SlackBotToken-rY8Mqn" --output text --query SecretString)
         
