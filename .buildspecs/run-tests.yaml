@@ -1,4 +1,8 @@
 version: 0.2
+env:
+  variables:
+    SLACK_CHANNEL_ID: C082CSTJ2J2
+    SLACK_BOT_TOKEN: xapp-1-A082CTS1RLN-8097642339956-1211d8d914aa4454bcccc2121708dbd6475628b3d2e15c934de18a8c7937d311
 phases:
   install:
     runtime-versions:
@@ -17,37 +21,54 @@ phases:
       - |
         # Read the exit status and test output from files
         test_exit_code=$(cat test_exit_code.txt)
-        
-        # Escape JSON special characters for Slack message
+
+        # Function to escape JSON strings
         escape_json() {
           echo "$1" | python -c 'import json,sys; print(json.dumps(sys.stdin.read()))'
         }
-        
-        send_slack_notification() {
-          local status="$1"
-          local message
-          if [ "$status" = "SUCCESS" ]; then
-          message="✅ *Build Succeeded*: The integration tests passed successfully."
-          else
-          # Include the output of the failed tests in Slack message
-          test_output=$(tail -n 1000 test_output.txt)
-          if [ -z "$test_output" ]; then
-            test_output="No specific failed test cases found."
+
+        # Upload file to Slack
+        upload_file_to_slack() {
+          local file_path="$1"
+          local file_name="$2"
+          local channel_id="$3"
+
+          # Step 1: Get upload URL and file ID
+          response=$(curl -s -X GET -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            "https://slack.com/api/files.getUploadURLExternal?filename=$file_name&length=$(wc -c <"$file_path")")
+          upload_url=$(echo "$response" | jq -r '.upload_url')
+          file_id=$(echo "$response" | jq -r '.file_id')
+
+          if [ "$upload_url" == "null" ] || [ "$file_id" == "null" ]; then
+            echo "Failed to get upload URL: $response"
+            return 1
           fi
-          escaped_output=$(escape_json "$test_output")
-          message="🚫 *Build Failed*: The integration tests failed. Check the details below:\n\n\`\`\`$test_output\`\`\`"
-          fi
-        
-          echo "Sending Slack notification..."
-          escaped_message=$(escape_json "$message")
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": $escaped_message}" "$SLACK_WEBHOOK_URL"
+
+          # Step 2: Upload the file
+          curl -s -X POST --data-binary @"$file_path" \
+            -H "Content-Type: application/octet-stream" \
+            "$upload_url"
+
+          # Step 3: Complete the upload
+          curl -s -X POST "https://slack.com/api/files.completeUploadExternal" \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "{
+              \"files\": [{\"id\": \"$file_id\", \"title\": \"$file_name\"}],
+              \"channel_id\": \"$channel_id\",
+              \"initial_comment\": \"Here are the test results:\"
+            }"
         }
-        
+
         if [ "$test_exit_code" -eq 0 ]; then
-          send_slack_notification "SUCCESS"
+          # Notify Slack of success
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"✅ *Build Succeeded*: The integration tests passed successfully.\"}" "$SLACK_WEBHOOK_URL"
         else
-          send_slack_notification "FAILED"
+          # Notify Slack of failure and upload test output
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"🚫 *Build Failed*: Uploading test results file...\"}" "$SLACK_WEBHOOK_URL"
+          upload_file_to_slack "test_output.txt" "test_output.txt" "$SLACK_CHANNEL_ID"
         fi
 artifacts:
   files:
