@@ -2,6 +2,7 @@ version: 0.2
 env:
   variables:
     SLACK_CHANNEL_ID: C082CSTJ2J2
+    SLACK_BOT_TOKEN: xoxb-214407968934-8110370703840-PVbwKXDu36PNnCGijkR9z3PE
 phases:
   install:
     runtime-versions:
