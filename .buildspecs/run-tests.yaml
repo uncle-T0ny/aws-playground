@@ -8,8 +8,6 @@ phases:
       nodejs: 20
     commands:
       - npm install
-      - apt-get update
-      - apt-get install -y jq
   build:
     commands:
       - echo "Running integration tests..."
@@ -33,6 +31,9 @@ phases:
           local file_path="$1"
           local file_name="$2"
           local channel_id="$3"
+
+          echo "SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:0:10}..." 
+
 
           file_length=$(wc -c < "$file_path" | tr -d '[:space:]')
 
