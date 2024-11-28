@@ -2,7 +2,6 @@ version: 0.2
 env:
   variables:
     SLACK_CHANNEL_ID: C082CSTJ2J2
-    SLACK_BOT_TOKEN: xapp-1-A082CTS1RLN-8097642339956-1211d8d914aa4454bcccc2121708dbd6475628b3d2e15c934de18a8c7937d311
 phases:
   install:
     runtime-versions:
@@ -39,7 +38,7 @@ phases:
           upload_url=$(echo "$response" | jq -r '.upload_url')
           file_id=$(echo "$response" | jq -r '.file_id')
 
-          if [ "$upload_url" == "null" ] || [ "$file_id" == "null" ]; then
+          if [ "$upload_url" = "null" ] || [ "$file_id" = "null" ]; then
             echo "Failed to get upload URL: $response"
             return 1
           fi
