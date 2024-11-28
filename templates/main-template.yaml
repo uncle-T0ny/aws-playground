@@ -75,6 +75,28 @@ Resources:
         S3Bucket: !Ref S3Bucket
         S3Key: !Ref S3Key
 
+  LambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-LambdaErrorsAlarm"
+      AlarmDescription: "Alarm triggered when Lambda function errors exceed the threshold."
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref LambdaFunction  # Reference the Lambda function defined earlier
+      Statistic: Sum
+      Period: 300                   # 5 minutes
+      EvaluationPeriods: 1          # Alarm after 1 period of exceeding threshold
+      Threshold: 1                  # Trigger alarm if there is at least 1 error
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching # Ignore missing data
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref TestNotificationTopic  # Send notification to SNS topic
+      OKActions:
+        - !Ref TestNotificationTopic  # Notify when alarm returns to OK state
+
   ApiGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
