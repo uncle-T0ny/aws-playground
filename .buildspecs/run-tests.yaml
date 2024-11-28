@@ -34,16 +34,22 @@ phases:
           local file_name="$2"
           local channel_id="$3"
 
+          file_length=$(wc -c < "$file_path" | tr -d '[:space:]')
+
           # Step 1: Get upload URL and file ID
-          response=$(curl -s -X GET -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-            "https://slack.com/api/files.getUploadURLExternal?filename=$file_name&length=$(wc -c <"$file_path")")
+          response=$(curl -X GET -G \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            --data-urlencode "filename=$file_name" \
+            --data-urlencode "length=$file_length" \
+            https://slack.com/api/files.getUploadURLExternal)
+
           upload_url=$(echo "$response" | jq -r '.upload_url')
           file_id=$(echo "$response" | jq -r '.file_id')
 
-          if [ "$upload_url" = "null" ] || [ "$file_id" = "null" ]; then
-            echo "Failed to get upload URL: $response"
-            return 1
-          fi
+          echo "Upload URL: $upload_url"
+          echo "File ID: $file_id"
+
+          echo "Uploading $file_path to Slack..."
 
           # Step 2: Upload the file
           curl -s -X POST --data-binary @"$file_path" \
