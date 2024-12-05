@@ -1,7 +1,7 @@
 version: 0.2
 env:
   variables:
-    SLACK_CHANNEL_ID: C082CSTJ2J2
+    SLACK_CHANNEL_ID: XXXXXXXX
 phases:
   install:
     runtime-versions:
